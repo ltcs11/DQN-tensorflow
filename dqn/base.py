@@ -40,9 +40,16 @@ class BaseModel(object):
     print(" [*] Loading checkpoints...")
 
     ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+    # checkpoint_dir = './checkpoints/Breakout-v0/min_delta--1/max_delta-1/history_length-4/train_frequency-4/' \
+    #   'target_q_update_step-10000/memory_size-1000000/action_repeat-4/ep_end_t-1000000/backend-tf/random_start-30/' \
+    #   'scale-10000/env_type-simple/min_reward--1.0/ep_start-1.0/screen_width-84/learn_start-50000.0/cnn_format-NCHW/' \
+    #   'learning_rate-0.00025/batch_size-32/discount-0.99/max_reward-1.0/max_step-50000000/env_name-Breakout-v0/' \
+    #   'ep_end-0.1/model-m2/screen_height-84/'
+    # ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
     if ckpt and ckpt.model_checkpoint_path:
       ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
       fname = os.path.join(self.checkpoint_dir, ckpt_name)
+      # fname = os.path.join(checkpoint_dir, ckpt_name)
       self.saver.restore(self.sess, fname)
       print(" [*] Load SUCCESS: %s" % fname)
       return True
@@ -57,10 +64,10 @@ class BaseModel(object):
   @property
   def model_dir(self):
     model_dir = self.config.env_name
-    for k, v in self._attrs.items():
-      if not k.startswith('_') and k not in ['display']:
-        model_dir += "/%s-%s" % (k, ",".join([str(i) for i in v])
-            if type(v) == list else v)
+    # for k, v in self._attrs.items():
+    #   if not k.startswith('_') and k not in ['display']:
+    #     model_dir += "%s-%s" % (k, ",".join([str(i) for i in v])
+    #         if type(v) == list else v)
     return model_dir + '/'
 
   @property

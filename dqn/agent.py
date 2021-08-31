@@ -12,6 +12,9 @@ from .replay_memory import ReplayMemory
 from .ops import linear, conv2d, clipped_error
 from .utils import get_time, save_pkl, load_pkl
 
+from functools import reduce
+
+
 class Agent(BaseModel):
   def __init__(self, config, environment, sess):
     super(Agent, self).__init__(config)
@@ -224,7 +227,7 @@ class Agent(BaseModel):
 
       q_summary = []
       avg_q = tf.reduce_mean(self.q, 0)
-      for idx in xrange(self.env.action_size):
+      for idx in range(self.env.action_size):
         q_summary.append(tf.summary.histogram('q/%s' % idx, avg_q[idx]))
       self.q_summary = tf.summary.merge(q_summary, 'q_summary')
 
@@ -325,7 +328,7 @@ class Agent(BaseModel):
 
     tf.initialize_all_variables().run()
 
-    self._saver = tf.train.Saver(self.w.values() + [self.step_op], max_to_keep=30)
+    self._saver = tf.train.Saver(list(self.w.values()) + [self.step_op], max_to_keep=5)
 
     self.load_model()
     self.update_target_q_network()
@@ -368,12 +371,14 @@ class Agent(BaseModel):
 
     test_history = History(self.config)
 
-    if not self.display:
-      gym_dir = '/tmp/%s-%s' % (self.env_name, get_time())
-      self.env.env.monitor.start(gym_dir)
+    # if not self.display:
+    #   gym_dir = '/tmp/%s-%s' % (self.env_name, get_time())
+    #   self.env.env.monitor.start(gym_dir)
 
     best_reward, best_idx = 0, 0
-    for idx in xrange(n_episode):
+
+    self.env.env.reset()
+    for idx in range(n_episode):
       screen, reward, action, terminal = self.env.new_random_game()
       current_reward = 0
 
@@ -387,6 +392,10 @@ class Agent(BaseModel):
         screen, reward, terminal = self.env.act(action, is_training=False)
         # 3. observe
         test_history.add(screen)
+        # 4. display
+        if not self.display:
+          self.env.env.render()
+          time.sleep(0.01)
 
         current_reward += reward
         if terminal:
@@ -400,6 +409,7 @@ class Agent(BaseModel):
       print(" [%d] Best reward : %d" % (best_idx, best_reward))
       print("="*30)
 
-    if not self.display:
-      self.env.env.monitor.close()
+    # if not self.display:
+    #   self.env.env.monitor.close()
+    self.env.env.close()
       #gym.upload(gym_dir, writeup='https://github.com/devsisters/DQN-tensorflow', api_key='')

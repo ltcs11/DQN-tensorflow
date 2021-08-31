@@ -52,17 +52,17 @@ class M1(DQNConfig):
 def get_config(FLAGS):
   if FLAGS.model == 'm1':
     config = M1
-  elif FLAGS.model == 'm2':
-    config = M2
+  # elif FLAGS.model == 'm2':
+  #   config = M2
 
-  for k, v in FLAGS.__dict__['__flags'].items():
-    if k == 'gpu':
-      if v == False:
-        config.cnn_format = 'NHWC'
-      else:
-        config.cnn_format = 'NCHW'
+  for k in FLAGS.__dict__['__wrapped']:
+      if k == 'use_gpu':
+          if not FLAGS.__getattr__(k):
+              config.cnn_format = 'NHWC'
+          else:
+              config.cnn_format = 'NCHW'
 
-    if hasattr(config, k):
-      setattr(config, k, v)
+  if hasattr(config, k):
+      setattr(config, k, FLAGS.__getattr__(k))
 
   return config
