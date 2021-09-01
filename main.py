@@ -13,15 +13,15 @@ flags.DEFINE_string('model', 'm1', 'Type of model')
 flags.DEFINE_boolean('dueling', False, 'Whether to use dueling deep q-network')
 flags.DEFINE_boolean('double_q', False, 'Whether to use double q-learning')
 
-# Environment
-flags.DEFINE_string('env_name', 'Breakout-v0', 'The name of gym environment to use')
+# Environment (default if not in config.py)
+flags.DEFINE_string('env_name', 'BreakoutNoFrameskip-v0', 'The name of gym environment to use')
 flags.DEFINE_integer('action_repeat', 4, 'The number of action to be repeated')
 
 # Etc
 flags.DEFINE_boolean('use_gpu', False, 'Whether to use gpu or not')
 flags.DEFINE_string('gpu_fraction', '1/1', 'idx / # of gpu fraction e.g. 1/3, 2/3, 3/3')
 flags.DEFINE_boolean('display', True, 'Whether to do display the game screen or not')
-flags.DEFINE_boolean('is_train', True, 'Whether to do training or testing')
+flags.DEFINE_boolean('is_train', False, 'Whether to do training or testing')
 flags.DEFINE_integer('random_seed', 123, 'Value of random seed')
 
 FLAGS = flags.FLAGS
@@ -42,8 +42,9 @@ def calc_gpu_fraction(fraction_string):
   return fraction
 
 def main(_):
-  gpu_options = tf.GPUOptions(
-      per_process_gpu_memory_fraction=calc_gpu_fraction(FLAGS.gpu_fraction))
+  # gpu_options = tf.GPUOptions(
+  #     per_process_gpu_memory_fraction=calc_gpu_fraction(FLAGS.gpu_fraction))
+  gpu_options = tf.GPUOptions(allow_growth=True)
 
   with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
     config = get_config(FLAGS) or FLAGS

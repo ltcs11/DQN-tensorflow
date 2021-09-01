@@ -395,7 +395,7 @@ class Agent(BaseModel):
         # 4. display
         if not self.display:
           self.env.env.render()
-          time.sleep(0.01)
+          # time.sleep(0.01)
 
         current_reward += reward
         if terminal:

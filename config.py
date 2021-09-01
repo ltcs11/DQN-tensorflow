@@ -33,7 +33,7 @@ class AgentConfig(object):
   _save_step = _test_step * 10
 
 class EnvironmentConfig(object):
-  env_name = 'Breakout-v0'
+  env_name = 'BreakoutNoFrameskip-v0'
 
   screen_width  = 84
   screen_height = 84
@@ -47,13 +47,13 @@ class DQNConfig(AgentConfig, EnvironmentConfig):
 class M1(DQNConfig):
   backend = 'tf'
   env_type = 'detail'
-  action_repeat = 1
+  action_repeat = 4
 
 def get_config(FLAGS):
   if FLAGS.model == 'm1':
     config = M1
-  # elif FLAGS.model == 'm2':
-  #   config = M2
+  elif FLAGS.model == 'm2':
+    raise NotImplementedError
 
   for k in FLAGS.__dict__['__wrapped']:
       if k == 'use_gpu':
