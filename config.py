@@ -7,7 +7,7 @@ class AgentConfig(object):
 
   batch_size = 32
   random_start = 30
-  cnn_format = 'NCHW'
+  cnn_format = 'NHWC'
   discount = 0.99
   target_q_update_step = 1 * scale
   learning_rate = 0.00025
@@ -19,8 +19,8 @@ class AgentConfig(object):
   ep_start = 1.
   ep_end_t = memory_size
 
-  history_length = 4
-  train_frequency = 4
+  history_length = 12
+  train_frequency = 6
   learn_start = 5. * scale
 
   min_delta = -1
@@ -60,7 +60,7 @@ def get_config(FLAGS):
           if not FLAGS.__getattr__(k):
               config.cnn_format = 'NHWC'
           else:
-              config.cnn_format = 'NCHW'
+              config.cnn_format = 'NHWC'
 
   if hasattr(config, k):
       setattr(config, k, FLAGS.__getattr__(k))

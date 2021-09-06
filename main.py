@@ -3,6 +3,7 @@ import random
 import tensorflow as tf
 
 from dqn.agent import Agent
+from dqn.agent_freezed import AgentFreezed
 from dqn.environment import GymEnvironment, SimpleGymEnvironment
 from config import get_config
 
@@ -23,6 +24,9 @@ flags.DEFINE_string('gpu_fraction', '1/1', 'idx / # of gpu fraction e.g. 1/3, 2/
 flags.DEFINE_boolean('display', True, 'Whether to do display the game screen or not')
 flags.DEFINE_boolean('is_train', False, 'Whether to do training or testing')
 flags.DEFINE_integer('random_seed', 123, 'Value of random seed')
+
+# Self
+flags.DEFINE_boolean('is_load_only', True, 'Whether to load agent directly from ckpt only')
 
 FLAGS = flags.FLAGS
 
@@ -60,11 +64,17 @@ def main(_):
     if not FLAGS.use_gpu:
       config.cnn_format = 'NHWC'
 
-    agent = Agent(config, env, sess)
-
-    if FLAGS.is_train:
-      agent.train()
+    if not FLAGS.is_load_only:
+      agent = Agent(config, env, sess)
+      if FLAGS.is_train:
+        agent.train()
+      else:
+        agent.play()
     else:
+      model_type = 'freezePb'
+      print('Using agent_freezed! Some items in config are invalid')
+      agent = AgentFreezed(config, env, sess, model_type, prefix=model_type)
+      # agent.save_dqn(saved_dir=agent.weight_dir)
       agent.play()
 
 if __name__ == '__main__':
