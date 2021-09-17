@@ -12,12 +12,13 @@ RUN echo "#0. prepare apt-get" && \
         apt-get update && \
         apt-get install -y vim cmake curl wget python3-dev && \
         apt-get install -y zlib1g-dev libglib2.0-dev libx11-dev libxext-dev && \
+    echo "# end clean" && \
         rm -rf /home/work/* && \
         apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN echo "#1. prepare python pkg" && \
         cd /home/work/ && \
-        curl "https://bootstrap.pypa.io/pip/3.5/get-pip.py" -o get-pip.py35.py && \
+        curl https://bootstrap.pypa.io/pip/3.5/get-pip.py -o get-pip.py35.py && \
         python3 get-pip.py35.py && \
     echo "#2.pip install" && \
         pip3 install tensorflow-gpu==1.10 ${DOCKER_PIP_OPTION} && \
@@ -25,3 +26,6 @@ RUN echo "#1. prepare python pkg" && \
         pip3 install gym ${DOCKER_PIP_OPTION} && \
         pip3 install atari-py==0.2.5 ${DOCKER_PIP_OPTION} && \
         pip3 install opencv-python ${DOCKER_PIP_OPTION} && \
+    echo "# end clean" && \
+        rm -rf /home/work/* && \
+        apt-get clean && rm -rf /var/lib/apt/lists/*

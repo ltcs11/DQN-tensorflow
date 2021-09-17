@@ -47,7 +47,7 @@ class DQNConfig(AgentConfig, EnvironmentConfig):
 class M1(DQNConfig):
   backend = 'tf'
   env_type = 'detail'
-  action_repeat = 4
+  action_repeat = 2
 
 def get_config(FLAGS):
   if FLAGS.model == 'm1':

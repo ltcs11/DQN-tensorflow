@@ -10,6 +10,8 @@ from .base import BaseModel
 from .history import History
 from .replay_memory import ReplayMemory
 
+import cv2
+
 
 class AgentFreezed(BaseModel):
   def __init__(self, config, environment, sess, model_type='ckptv2', prefix=None):
@@ -108,6 +110,9 @@ class AgentFreezed(BaseModel):
       for _ in range(self.history_length):
         test_history.add(screen)
 
+      img_id = 24
+      max_img_id = 24
+
       for t in tqdm(range(n_step), ncols=70):
         # 1. predict
         action = self.predict(test_history.get(), test_ep)
@@ -117,8 +122,17 @@ class AgentFreezed(BaseModel):
         test_history.add(screen)
         # 4. display
         if not self.display:
-          self.env.env.render()
+          self.env.env.render(mode='human')
+          np.testing.assert_almost_equal(test_history.get()[:, :, -1], screen, decimal=4)
+          screen_saved = (screen * 255).astype(np.uint8)
+          if img_id < max_img_id:
+            cv2.imwrite('./images/BreakoutNoFrameskip-v0-{:02d}.jpg'.format(img_id), screen_saved)
+            img_id += 1
           # time.sleep(0.01)
+        else:
+          img = self.env.env.render(mode='rgb_array')
+          cv2.imshow('win', img)
+          cv2.waitKey(0)
 
         current_reward += reward
         if terminal:

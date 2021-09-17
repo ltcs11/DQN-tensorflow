@@ -71,9 +71,9 @@ def main(_):
       else:
         agent.play()
     else:
-      model_type = 'freezePb'
+      model_type = 'ckptv2'
       print('Using agent_freezed! Some items in config are invalid')
-      agent = AgentFreezed(config, env, sess, model_type, prefix=model_type)
+      agent = AgentFreezed(config, env, sess, prefix='-39800000', model_type=model_type)
       # agent.save_dqn(saved_dir=agent.weight_dir)
       agent.play()
 
