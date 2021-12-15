@@ -40,6 +40,30 @@ class EnvironmentConfig(object):
   max_reward = 1.
   min_reward = -1.
 
+# class EnvironmentConfig_Breakout(object):
+#   env_name = 'BreakoutNoFrameskip-v0'
+#
+#   screen_width  = 84
+#   screen_height = 84
+#   max_reward = 1.
+#   min_reward = -1.
+#
+# class EnvironmentConfig_SpaceInvaders(object):
+#   env_name = 'SpaceInvadersNoFrameskip-v4'
+#
+#   screen_width  = 84
+#   screen_height = 84
+#   max_reward = 1.
+#   min_reward = -1.
+#
+# class EnvironmentConfig_Pong(object):
+#   env_name = 'PongNoFrameskip-v4'
+#
+#   screen_width  = 84
+#   screen_height = 84
+#   max_reward = 1.
+#   min_reward = -1.
+
 class DQNConfig(AgentConfig, EnvironmentConfig):
   model = ''
   pass

@@ -17,7 +17,7 @@ class AgentFreezed(BaseModel):
   def __init__(self, config, environment, sess, model_type='ckptv2', prefix=None):
     super(AgentFreezed, self).__init__(config)
     self.sess = sess
-    self.weight_dir = './checkpoints/BreakoutNoFrameskip-v0'
+    self.weight_dir = './checkpoints/' + self.env_name
     self.model_type = model_type
 
     self.env = environment
@@ -44,26 +44,35 @@ class AgentFreezed(BaseModel):
     if prefix is not None:
       prefix = os.path.join(self.weight_dir, prefix)
     else:
-      prefix = os.path.join(self.weight_dir, '-5710000')
+      prefix = os.path.join(self.weight_dir, '-39800000')
 
+    print("load model from {:s} in [{:s}]".format(model_type, prefix))
     if model_type == 'ckptv1':
       ckpt = tf.train.get_checkpoint_state(self.weight_dir)
       assert ckpt is not None
       meta_file = prefix + '.meta'
       saver = tf.train.import_meta_graph(meta_file, clear_devices=True)
+      self.sess.run(tf.global_variables_initializer())
       saver.restore(self.sess, prefix)
     elif model_type == 'ckptv2':
       meta_file = prefix + '.meta'
       saver = tf.train.import_meta_graph(meta_file, clear_devices=True)
+      self.sess.run(tf.global_variables_initializer())
       input_checkpoint = meta_file[0: len(meta_file) - 5]
       saver.restore(self.sess, input_checkpoint)
     elif model_type == 'freezePb':
       pb_file = prefix + '.pb'
       pb = open(pb_file, 'rb')
-
       self.graph_def = tf.GraphDef()
       self.graph_def.ParseFromString(pb.read())
+      self.sess.run(tf.global_variables_initializer())
       tf.import_graph_def(self.graph_def, name='')
+    elif model_type == "SavedModel":
+      saved_model_tag = tf.saved_model.tag_constants.SERVING
+      self.sess.run(tf.global_variables_initializer())
+      tf.saved_model.loader.load(self.sess, [saved_model_tag], prefix)
+    else:
+      raise NotImplementedError
 
     # mark graph input + output
     input_tensor_name = self.input_name + ':0'
@@ -73,19 +82,29 @@ class AgentFreezed(BaseModel):
 
     return
 
-  def save_dqn(self, saved_dir=None):
+  def save_dqn(self, saved_dir=None, model_type='freezePb'):
     if saved_dir is not None:
       pb_file = os.path.join(saved_dir, 'freezePb.pb')
     else:
-      pb_file = 'freezePb.pb'
+      raise NotImplementedError
 
-    output_node_name = self.output_name
-    output_graph_def = tf.graph_util.convert_variables_to_constants(
-      sess=self.sess,
-      input_graph_def=self.sess.graph_def,
-      output_node_names=output_node_name.split(","))
-    with tf.gfile.GFile(pb_file, "wb") as f:  # 保存模型
-      f.write(output_graph_def.SerializeToString())  # 序列化输出
+    if model_type == 'freezePb':
+      output_node_name = self.output_name
+      output_graph_def = tf.graph_util.convert_variables_to_constants(
+        sess=self.sess,
+        input_graph_def=self.sess.graph_def,
+        output_node_names=output_node_name.split(","))
+      with tf.gfile.GFile(pb_file, "wb") as f:  # 保存模型
+        f.write(output_graph_def.SerializeToString())  # 序列化输出
+    elif model_type == 'SavedModel':
+      tf.saved_model.simple_save(self.sess,
+                                 os.path.join(saved_dir, 'SavedModel'),
+                                 inputs={"Input": self.input},
+                                 outputs={"Output": self.output})
+    elif model_type == 'ckptv1':
+      from tensorflow.core.protobuf import saver_pb2
+      saver2 = tf.train.Saver(write_version=saver_pb2.SaverDef.V1)
+      saver2.save(self.sess, os.path.join(saved_dir, 'ckptv1/-39800000.ckpt'))
 
     return
 
@@ -126,7 +145,8 @@ class AgentFreezed(BaseModel):
           np.testing.assert_almost_equal(test_history.get()[:, :, -1], screen, decimal=4)
           screen_saved = (screen * 255).astype(np.uint8)
           if img_id < max_img_id:
-            cv2.imwrite('./images/BreakoutNoFrameskip-v0-{:02d}.jpg'.format(img_id), screen_saved)
+            os.makedirs('./images/' + self.env_name, exist_ok=True)
+            cv2.imwrite('./images/{:s}/{:s}-{:02d}.jpg'.format(self.env_name, self.env_name, img_id), screen_saved)
             img_id += 1
           # time.sleep(0.01)
         else:

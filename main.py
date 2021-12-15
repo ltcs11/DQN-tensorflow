@@ -71,11 +71,13 @@ def main(_):
       else:
         agent.play()
     else:
-      model_type = 'ckptv2'
+      load_model_type = 'SavedModel'
+      # save_model_type = 'ckptv1'
       print('Using agent_freezed! Some items in config are invalid')
-      agent = AgentFreezed(config, env, sess, prefix='-39800000', model_type=model_type)
-      # agent.save_dqn(saved_dir=agent.weight_dir)
+      agent = AgentFreezed(config, env, sess, prefix='saved_model', model_type=load_model_type)
+      # agent.save_dqn(saved_dir=agent.weight_dir, model_type=save_model_type)
       agent.play()
+
 
 if __name__ == '__main__':
   tf.app.run()
